@@ -31,7 +31,7 @@ class VisualCeption extends CodeceptionModule implements MultiSession
         'module' => 'WebDriver',
         'fullScreenShot' => false
     ];
-    
+
     protected $saveCurrentImageIfFailure;
     private $referenceImageDir;
 
@@ -161,7 +161,7 @@ class VisualCeption extends CodeceptionModule implements MultiSession
 
         return null;
     }
-    
+
     /**
      * Get value of the private property $referenceImageDir
      *
@@ -179,7 +179,7 @@ class VisualCeption extends CodeceptionModule implements MultiSession
      * @param string $identifier Identifies your test object
      * @param string $elementID DOM ID of the element, which should be screenshotted
      * @param string|array $excludeElements Element name or array of Element names, which should not appear in the screenshot
-     * @param float $deviation 
+     * @param float $deviation
      */
     public function seeVisualChanges($identifier, $elementID = null, $excludeElements = array(), $deviation = null)
     {
@@ -197,7 +197,7 @@ class VisualCeption extends CodeceptionModule implements MultiSession
      * @param string $identifier identifies your test object
      * @param string $elementID DOM ID of the element, which should be screenshotted
      * @param string|array $excludeElements string of Element name or array of Element names, which should not appear in the screenshot
-     * @param float $deviation 
+     * @param float $deviation
      */
     public function dontSeeVisualChanges($identifier, $elementID = null, $excludeElements = array(), $deviation = null)
     {
@@ -416,17 +416,23 @@ class VisualCeption extends CodeceptionModule implements MultiSession
             list($viewportHeight, $devicePixelRatio) = $this->webDriver->executeScript("return [window.innerHeight, window.devicePixelRatio]");
 
             $itr = $height / $viewportHeight;
+            $isViewPortHeightBiggerThanPageHeight = $height > $viewportHeight;
 
-            for ($i = 0; $i < intval($itr); $i++) {
-                $screenshotBinary = $this->webDriver->takeScreenshot();
-                $screenShotImage->readimageblob($screenshotBinary);
-                $this->webDriver->executeScript("window.scrollBy(0, {$viewportHeight});");
+            if ($isViewPortHeightBiggerThanPageHeight) {
+                for ($i = 0; $i < intval($itr); $i++) {
+                    $screenshotBinary = $this->webDriver->takeScreenshot();
+                    $screenShotImage->readimageblob($screenshotBinary);
+                    $this->webDriver->executeScript("window.scrollBy(0, {$viewportHeight});");
+                }
             }
 
             $screenshotBinary = $this->webDriver->takeScreenshot();
             $screenShotImage->readimageblob($screenshotBinary);
             $heightOffset = $viewportHeight - ($height - (intval($itr) * $viewportHeight));
-            $screenShotImage->cropImage(0, 0, 0, $heightOffset * $devicePixelRatio);
+
+            if ($isViewPortHeightBiggerThanPageHeight) {
+                $screenShotImage->cropImage(0, 0, 0, $heightOffset * $devicePixelRatio);
+            }
 
             $screenShotImage->resetIterator();
             $fullShot = $screenShotImage->appendImages(true);
