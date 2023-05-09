@@ -480,11 +480,11 @@ class VisualCeption extends CodeceptionModule implements MultiSession
 
             $screenshotBinary = $this->webDriver->takeScreenshot();
             $screenShotImage->readimageblob($screenshotBinary);
-            $heightOffset = $viewportHeight - ($height - (intval($itr) * $viewportHeight));
-
-            if ($isViewPortHeightBiggerThanPageHeight) {
-                $screenShotImage->cropImage(0, 0, 0, $heightOffset * $devicePixelRatio);
-            }
+//            $heightOffset = $viewportHeight - ($height - (intval($itr) * $viewportHeight));
+//
+//            if ($isViewPortHeightBiggerThanPageHeight) {
+//                $screenShotImage->cropImage(0, 0, 0, $heightOffset * $devicePixelRatio);
+//            }
 
             $screenShotImage->resetIterator();
             $fullShot = $screenShotImage->appendImages(true);
