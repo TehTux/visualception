@@ -475,10 +475,10 @@ class VisualCeption extends CodeceptionModule implements MultiSession
                     $screenshotBinary = $this->webDriver->takeScreenshot();
                     $screenShotImage->readimageblob($screenshotBinary);
                     $this->webDriver->executeScript("window.scrollBy(0, {$viewportHeight});");
-                    $pageTop = $this->webDriver->executeScript('return Math.abs(document.body.getBoundingClientRect().top);');
+                    $pageTop = $this->webDriver->executeScript('return Math.abs(window.visualViewport.pageTop);');
                     while ($pageTop != $viewportHeight * ($i + 1)) {
                         usleep(200000);
-                        $pageTop = $this->webDriver->executeScript('return Math.abs(document.body.getBoundingClientRect().top);');
+                        $pageTop = $this->webDriver->executeScript('return Math.abs(window.visualViewport.pageTop);');
                         if ($pageTop == $height - $viewportHeight) {
                             break;
                         }
