@@ -472,6 +472,7 @@ class VisualCeption extends CodeceptionModule implements MultiSession
 
             if ($isViewPortHeightBiggerThanPageHeight) {
                 for ($i = 0; $i < intval($itr); $i++) {
+                    usleep(100000);
                     $screenshotBinary = $this->webDriver->takeScreenshot();
                     $screenShotImage->readimageblob($screenshotBinary);
                     $this->webDriver->executeScript("window.scrollBy(0, {$viewportHeight});");
