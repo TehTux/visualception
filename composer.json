@@ -1,5 +1,5 @@
 {
-  "name": "codeception/module-visualception",
+  "name": "1ff/module-visualception",
   "description": "Visual regression tests for Codeception",
   "version": "5.0.0",
   "type": "library",
