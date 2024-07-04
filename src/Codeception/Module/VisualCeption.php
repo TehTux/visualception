@@ -466,6 +466,7 @@ class VisualCeption extends CodeceptionModule implements MultiSession
         if ($this->config["fullScreenShot"] === true || $this->config["forceFullScreenShot"] === true) {
             $height = $this->webDriver->executeScript("var ele=document.querySelector('html'); return ele.scrollHeight;");
             list($viewportHeight, $devicePixelRatio) = $this->webDriver->executeScript("return [window.innerHeight, window.devicePixelRatio]");
+            $this->hideScrollbarsForScreenshot();
 
             $itr = $height / $viewportHeight;
             $isViewPortHeightBiggerThanPageHeight = $height > $viewportHeight;
@@ -473,12 +474,14 @@ class VisualCeption extends CodeceptionModule implements MultiSession
             if ($isViewPortHeightBiggerThanPageHeight) {
                 for ($i = 0; $i < intval($itr); $i++) {
                     usleep(100000);
+
                     $screenshotBinary = $this->webDriver->takeScreenshot();
                     $screenShotImage->readimageblob($screenshotBinary);
                     $this->webDriver->executeScript("window.scrollBy(0, {$viewportHeight});");
                     $pageTop = $this->webDriver->executeScript('return Math.abs(window.visualViewport.pageTop);');
                     $finishTime = time() + 20;
                     $timeout = true;
+
                     while ($pageTop != $viewportHeight * ($i + 1) && $timeout) {
                         usleep(200000);
                         $pageTop = $this->webDriver->executeScript('return Math.abs(window.visualViewport.pageTop);');
@@ -522,6 +525,15 @@ class VisualCeption extends CodeceptionModule implements MultiSession
         $this->resetHideElementsForScreenshot($excludeElements);
 
         return $elementPath;
+    }
+
+    private function hideScrollbarsForScreenshot(): void
+    {
+        try {
+            if ($this->webDriver->executeScript("return document.documentElement.scrollWidth > document.documentElement.clientWidth;")){
+                $this->webDriver->executeScript("document.body.style.overflowX = 'hidden';");
+            }
+        } catch (\Exception $e) {};
     }
 
     /**
