@@ -243,6 +243,14 @@ class VisualCeption extends CodeceptionModule implements MultiSession
         $this->assertTrue(true);
     }
 
+    public function dontSeeVisualChangesForViewPort(string $identifier, string $elementID = null, array|string $excludeElements = [], float $deviation = null): void
+    {
+        $this->compareVisualChanges($identifier, $elementID, $excludeElements, $deviation, false, false);
+
+        // used for assertion counter in codeception / phpunit
+        $this->assertTrue(true);
+    }
+
     /**
      * @param $identifier
      * @param $elementID
@@ -251,13 +259,13 @@ class VisualCeption extends CodeceptionModule implements MultiSession
      * @param $seeChanges
      * @return void
      */
-    private function compareVisualChanges($identifier, $elementID, $excludeElements, $deviation, $seeChanges): void
+    private function compareVisualChanges($identifier, $elementID, $excludeElements, $deviation, $seeChanges, $fullScreenshot = true): void
     {
         $excludeElements = (array)$excludeElements;
 
         $maximumDeviation = (!$deviation && !is_numeric($deviation)) ? $this->maximumDeviation : (float)$deviation;
 
-        $deviationResult = $this->getDeviation($identifier, $elementID, $excludeElements);
+        $deviationResult = $this->getDeviation($identifier, $elementID, $fullScreenshot, $excludeElements);
 
         if (is_null($deviationResult["deviationImage"])) {
             return;
@@ -339,10 +347,10 @@ class VisualCeption extends CodeceptionModule implements MultiSession
      * @param array $excludeElements Element names, which should not appear in the screenshot
      * @return array Includes the calculation of deviation in percent and the diff-image
      */
-    private function getDeviation($identifier, $elementID, array $excludeElements = []): array
+    private function getDeviation($identifier, $elementID, $fullScreenshot, array $excludeElements = []): array
     {
         $coords = $this->getCoordinates($elementID);
-        $this->createScreenshot($identifier, $coords, $excludeElements);
+        $this->createScreenshot($identifier, $coords, $fullScreenshot, $excludeElements);
 
         $compareResult = $this->compare($identifier);
 
@@ -448,7 +456,7 @@ class VisualCeption extends CodeceptionModule implements MultiSession
      * @return string Path of the current screenshot image
      * @throws \ImagickException
      */
-    private function createScreenshot($identifier, array $coords, array $excludeElements = [])
+    private function createScreenshot($identifier, array $coords, $fullScreenshot, array $excludeElements = [])
     {
         $screenShotDir = Configuration::outputDir() . 'debug/';
 
@@ -463,7 +471,7 @@ class VisualCeption extends CodeceptionModule implements MultiSession
 
         $this->hideElementsForScreenshot($excludeElements);
 
-        if ($this->config["fullScreenShot"] === true || $this->config["forceFullScreenShot"] === true) {
+        if ($fullScreenshot) {
             $height = $this->webDriver->executeScript("var ele=document.querySelector('html'); return ele.scrollHeight;");
             list($viewportHeight, $devicePixelRatio) = $this->webDriver->executeScript("return [window.innerHeight, window.devicePixelRatio]");
             $this->hideScrollbarsForScreenshot();
@@ -478,6 +486,7 @@ class VisualCeption extends CodeceptionModule implements MultiSession
                     $screenshotBinary = $this->webDriver->takeScreenshot();
                     $screenShotImage->readimageblob($screenshotBinary);
                     $this->webDriver->executeScript("window.scrollBy(0, {$viewportHeight});");
+
                     $pageTop = $this->webDriver->executeScript('return Math.abs(window.visualViewport.pageTop);');
                     $finishTime = time() + 20;
                     $timeout = true;
