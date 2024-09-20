@@ -115,5 +115,5 @@ VisualCeption uses the WebDriver module for making the screenshots. As a consequ
 
 ## Run tests with Docker
 ```
-docker-compose up --abort-on-container-exit
+docker compose up --abort-on-container-exit
 ```

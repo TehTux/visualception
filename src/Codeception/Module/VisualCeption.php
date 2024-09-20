@@ -271,7 +271,21 @@ class VisualCeption extends CodeceptionModule implements MultiSession
             return;
         }
 
-        if (($seeChanges && $deviationResult["deviation"] <= $maximumDeviation) || (!$seeChanges && $deviationResult["deviation"] > $maximumDeviation)) {
+        $outOfMaxDeviation = !$seeChanges && $deviationResult["deviation"] > $maximumDeviation;
+
+        if ($outOfMaxDeviation) {
+            $retries = 0;
+
+            while ($retries < 5 && $outOfMaxDeviation){
+                $deviationResult = $this->getDeviation($identifier, $elementID, $fullScreenshot, $excludeElements);
+                $outOfMaxDeviation = $deviationResult["deviation"] > $maximumDeviation;
+                $retries++;
+                sleep(1);
+            }
+        }
+
+        if (($seeChanges && $deviationResult["deviation"] <= $maximumDeviation) || $outOfMaxDeviation) {
+
             $compareScreenshotPath = $this->getDeviationScreenshotPath($identifier);
             $deviationResult["deviationImage"]->writeImage($compareScreenshotPath);
 
@@ -455,6 +469,7 @@ class VisualCeption extends CodeceptionModule implements MultiSession
      * @param array $excludeElements List of elements, which should not appear in the screenshot
      * @return string Path of the current screenshot image
      * @throws \ImagickException
+     * @throws \Exception
      */
     private function createScreenshot($identifier, array $coords, $fullScreenshot, array $excludeElements = [])
     {
@@ -498,6 +513,7 @@ class VisualCeption extends CodeceptionModule implements MultiSession
                         if (!$timeout) {
                             throw new \Exception('Error on scroll and make screenshot');
                         }
+
                         if ($pageTop == $height - $viewportHeight) {
                             break;
                         }
@@ -510,7 +526,7 @@ class VisualCeption extends CodeceptionModule implements MultiSession
             $heightOffset = $viewportHeight - ($height - (intval($itr) * $viewportHeight));
 
             if ($isViewPortHeightBiggerThanPageHeight) {
-               $screenShotImage->cropImage(0, 0, 0, $heightOffset * $devicePixelRatio);
+                $screenShotImage->cropImage(0, 0, 0, $heightOffset * $devicePixelRatio);
             }
 
             $screenShotImage->resetIterator();
