@@ -258,6 +258,7 @@ class VisualCeption extends CodeceptionModule implements MultiSession
      * @param $deviation
      * @param $seeChanges
      * @return void
+     * @throws \Exception
      */
     private function compareVisualChanges($identifier, $elementID, $excludeElements, $deviation, $seeChanges, $fullScreenshot = true): void
     {
@@ -274,13 +275,18 @@ class VisualCeption extends CodeceptionModule implements MultiSession
         $outOfMaxDeviation = !$seeChanges && $deviationResult["deviation"] > $maximumDeviation;
 
         if ($outOfMaxDeviation) {
-            $retries = 0;
+            $startTime = time();
+            $timeout = 15;
 
-            while ($retries < 5 && $outOfMaxDeviation){
+            while ($outOfMaxDeviation) {
+                if((time() - $startTime) > $timeout){
+                    throw new \Exception("Screenshots comparison failed after timeout - $timeout seconds");
+                }
+
                 $deviationResult = $this->getDeviation($identifier, $elementID, $fullScreenshot, $excludeElements);
                 $outOfMaxDeviation = $deviationResult["deviation"] > $maximumDeviation;
-                $retries++;
-                sleep(1);
+                $this->webDriver->executeScript("window.scrollTo(0, 0);");
+                sleep(2);
             }
         }
 
