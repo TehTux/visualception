@@ -279,8 +279,10 @@ class VisualCeption extends CodeceptionModule implements MultiSession
             $timeout = 15;
 
             while ($outOfMaxDeviation) {
-                if((time() - $startTime) > $timeout){
-                    throw new \Exception("Screenshots comparison failed after timeout - $timeout seconds");
+                $currentTime = time() - $startTime;
+
+                if($currentTime > $timeout){
+                    throw new \Exception("Screenshots comparison failed after $currentTime seconds");
                 }
 
                 $deviationResult = $this->getDeviation($identifier, $elementID, $fullScreenshot, $excludeElements);
