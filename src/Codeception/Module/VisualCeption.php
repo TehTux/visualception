@@ -282,7 +282,7 @@ class VisualCeption extends CodeceptionModule implements MultiSession
                 $currentTime = time() - $startTime;
 
                 if($currentTime > $timeout){
-                    throw new \Exception("Screenshots comparison failed after $currentTime seconds");
+                    break;
                 }
 
                 $deviationResult = $this->getDeviation($identifier, $elementID, $fullScreenshot, $excludeElements);
@@ -297,7 +297,7 @@ class VisualCeption extends CodeceptionModule implements MultiSession
             $compareScreenshotPath = $this->getDeviationScreenshotPath($identifier);
             $deviationResult["deviationImage"]->writeImage($compareScreenshotPath);
 
-            throw $this->createImageDeviationException($identifier, $compareScreenshotPath, $deviationResult["deviation"], $seeChanges);
+            throw $this->createImageDeviationException($identifier, $compareScreenshotPath, $deviationResult["deviation"], $seeChanges, $currentTime);
         }
     }
 
@@ -308,14 +308,15 @@ class VisualCeption extends CodeceptionModule implements MultiSession
      * @param $seeChanges
      * @return \Codeception\Exception\ImageDeviationException
      */
-    private function createImageDeviationException($identifier, $compareScreenshotPath, $deviation, $seeChanges): ImageDeviationException
+    private function createImageDeviationException($identifier, $compareScreenshotPath, $deviation, $seeChanges, $currentTime = null): ImageDeviationException
     {
-        $message = "The deviation of the taken screenshot is too high";
         if ($seeChanges) {
-            $message = "The deviation of the taken screenshot is too low";
+            $message = "The deviation of the taken screenshot is too low ({$deviation}%) \nSee {$compareScreenshotPath} for a deviation screenshot.";
         }
 
-        $message .= " ({$deviation}%) \nSee {$compareScreenshotPath} for a deviation screenshot.";
+        if(!$seeChanges){
+            $message = " ({$deviation}%) \nSee {$compareScreenshotPath} for a deviation screenshot with timeout $currentTime seconds.";
+        }
 
         return new ImageDeviationException(
             $message,
