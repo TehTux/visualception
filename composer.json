@@ -1,9 +1,8 @@
 {
-  "name": "1ff/module-visualception",
+  "name": "tehtux/module-visualception",
   "description": "Visual regression tests for Codeception",
-  "version": "5.0.0",
   "type": "library",
-  "homepage": "https://github.com/Codeception/VisualCeption",
+  "homepage": "https://github.com/TehTux/visualception",
   "license": "Apache-2.0",
   "require": {
     "php": ">=8.0",
